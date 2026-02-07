@@ -57,6 +57,7 @@ export default function App() {
         <GallerySwipe
           conversations={conversations}
           onClose={() => setGalleryMode(false)}
+          onRegenerate={generate}
         />
       )}
 

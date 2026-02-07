@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import EmailPreview from '../templates/EmailPreview';
 import DownloadButton from './DownloadButton';
 
-export default function GallerySwipe({ conversations, onClose }) {
+export default function GallerySwipe({ conversations, onClose, onRegenerate }) {
   const [current, setCurrent] = useState(0);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const touchStart = useRef(null);
@@ -83,6 +83,23 @@ export default function GallerySwipe({ conversations, onClose }) {
           DOC {String(current + 1).padStart(3, "0")} / {String(total).padStart(3, "0")}
         </span>
         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          {onRegenerate && (
+            <button
+              onClick={() => { setCurrent(0); onRegenerate(); }}
+              style={{
+                padding: "4px 12px",
+                backgroundColor: "transparent",
+                border: "1px solid #cc0000",
+                color: "#cc0000",
+                fontFamily: "'Courier New', monospace",
+                fontSize: "10px",
+                cursor: "pointer",
+                letterSpacing: "1px",
+              }}
+            >
+              REGENERATE
+            </button>
+          )}
           <DownloadButton
             targetRef={emailRef}
             filename={`jefnerator_leak_${String(current + 1).padStart(3, "0")}.png`}
