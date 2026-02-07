@@ -85,6 +85,7 @@ export default function GallerySwipe({ conversations, onClose, onRegenerate }) {
         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
           {onRegenerate && (
             <button
+              className="gallery-regen"
               onClick={() => { setCurrent(0); onRegenerate(); }}
               style={{
                 padding: "4px 12px",

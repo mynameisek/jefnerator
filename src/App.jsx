@@ -41,7 +41,7 @@ export default function App() {
   const generate = useCallback(() => {
     setGenerating(true);
     setTimeout(() => {
-      const count = 3 + Math.floor(Math.random() * 4);
+      const count = 5 + Math.floor(Math.random() * 5);
       const convos = generateBatch(name, email, topic, count);
       previewRefs.current = [];
       setConversations(convos);

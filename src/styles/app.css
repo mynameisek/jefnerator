@@ -89,6 +89,15 @@ input:focus, select:focus {
   color: #ff3333 !important;
 }
 
+@keyframes softPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.gallery-regen {
+  animation: softPulse 2.5s ease-in-out infinite;
+}
+
 /* Mobile responsive */
 @media (max-width: 768px) {
   button {
