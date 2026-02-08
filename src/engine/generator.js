@@ -44,9 +44,18 @@ function noisyName(name) {
   return n();
 }
 
-function sprinkleName(text, name) {
-  if (!name || Math.random() > 0.3) return text;
-  const n = noisyName(name);
+const JEFFREY_NAMES = [
+  "Jeffrey", "jeffrey", "Jeff", "jeff", "J", "J.",
+  "jef", "Jef", "JE", "Jeffrey E.",
+];
+
+function noisyJeffrey() {
+  return randomChoice(JEFFREY_NAMES);
+}
+
+function sprinkleName(text, recipientName) {
+  if (!recipientName || Math.random() > 0.3) return text;
+  const n = noisyName(recipientName);
   if (Math.random() < 0.5) return randomChoice(GREETINGS)(n) + text;
   return text + randomChoice(SIGN_OFFS)(n);
 }
@@ -59,9 +68,12 @@ function generateMessages(topic, count, name) {
     const patternKey = randomChoice(pool);
     const pattern = MESSAGE_PATTERNS[patternKey];
     if (!pattern) continue;
+    const from = i % 2 === 0 ? "trollozor" : "user";
+    // Jeffrey writes → greet target name; target writes → greet Jeffrey
+    const recipient = from === "trollozor" ? name : noisyJeffrey();
     messages.push({
-      from: i % 2 === 0 ? "trollozor" : "user",
-      text: sprinkleName(pattern(), name),
+      from,
+      text: sprinkleName(pattern(), recipient),
       date: randomDate(),
     });
   }
