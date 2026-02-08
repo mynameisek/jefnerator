@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { generateBatch, randomChoice } from './engine/generator';
+import { generateBatch, seededBatch, randomChoice } from './engine/generator';
 import EmailPreview from './templates/EmailPreview';
 import DownloadButton, { DownloadAllButton } from './components/DownloadButton';
 import ShareButtons from './components/ShareButtons';
@@ -13,11 +13,13 @@ export default function App() {
   const [name, setName] = useState(params.get("name") || "");
   const [email, setEmail] = useState(params.get("email") || "");
   const [topic, setTopic] = useState(validTopics.includes(paramTopic) ? paramTopic : "random");
+  const [seed, setSeed] = useState(params.get("seed") ? Number(params.get("seed")) : null);
   const [conversations, setConversations] = useState([]);
   const [generating, setGenerating] = useState(false);
   const [showVips, setShowVips] = useState(false);
   const [galleryMode, setGalleryMode] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const previewRefs = useRef([]);
 
   // Sync state → URL
@@ -26,9 +28,10 @@ export default function App() {
     if (name) p.set("name", name);
     if (email) p.set("email", email);
     if (topic && topic !== "random") p.set("topic", topic);
+    if (seed) p.set("seed", seed);
     const qs = p.toString();
     window.history.replaceState(null, "", qs ? `?${qs}` : window.location.pathname);
-  }, [name, email, topic]);
+  }, [name, email, topic, seed]);
 
   // Detect mobile
   useEffect(() => {
@@ -38,17 +41,34 @@ export default function App() {
     return () => window.removeEventListener('resize', check);
   }, []);
 
-  const generate = useCallback(() => {
+  // Auto-generate if seed in URL
+  useEffect(() => {
+    const urlSeed = params.get("seed");
+    if (urlSeed) generateWithSeed(Number(urlSeed));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const generateWithSeed = useCallback((forceSeed) => {
     setGenerating(true);
     setTimeout(() => {
-      const count = 5 + Math.floor(Math.random() * 5);
-      const convos = generateBatch(name, email, topic, count);
+      const s = forceSeed || (Date.now() ^ (Math.random() * 0xFFFFFF | 0));
+      const count = 7;
+      const convos = seededBatch(name, email, topic, count, s);
       previewRefs.current = [];
+      setSeed(s);
       setConversations(convos);
       setGenerating(false);
       if (isMobile) setGalleryMode(true);
     }, 500);
   }, [name, email, topic, isMobile]);
+
+  const generate = useCallback(() => generateWithSeed(null), [generateWithSeed]);
+
+  const copyShareLink = useCallback(() => {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    });
+  }, []);
 
   return (
     <div className="app-container" style={{ minHeight: "100vh", backgroundColor: "#0a0a0a", color: "#e0e0e0", fontFamily: "'Courier New', monospace" }}>
@@ -58,6 +78,7 @@ export default function App() {
           conversations={conversations}
           onClose={() => setGalleryMode(false)}
           onRegenerate={generate}
+          onShareLink={copyShareLink}
         />
       )}
 
@@ -195,6 +216,11 @@ export default function App() {
               {"\u2501\u2501\u2501"} {conversations.length} DOCUMENTS DECLASSIFIED {"\u2501\u2501\u2501"}
             </span>
             <div style={{ display: "flex", gap: "8px" }}>
+              <button onClick={copyShareLink} className="download-btn"
+                style={{ padding: "4px 12px", backgroundColor: "transparent", border: linkCopied ? "1px solid #66ff99" : "1px solid #ff3333", color: linkCopied ? "#66ff99" : "#ff3333", fontFamily: "'Courier New', monospace", fontSize: "10px", cursor: "pointer" }}
+              >
+                {linkCopied ? "LINK COPIED!" : "SHARE LINK"}
+              </button>
               <button onClick={() => setGalleryMode(true)} className="download-btn"
                 style={{ padding: "4px 12px", backgroundColor: "transparent", border: "1px solid #333", color: "#666", fontFamily: "'Courier New', monospace", fontSize: "10px", cursor: "pointer" }}
               >

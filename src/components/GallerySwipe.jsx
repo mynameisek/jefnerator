@@ -2,8 +2,9 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import EmailPreview from '../templates/EmailPreview';
 import DownloadButton from './DownloadButton';
 
-export default function GallerySwipe({ conversations, onClose, onRegenerate }) {
+export default function GallerySwipe({ conversations, onClose, onRegenerate, onShareLink }) {
   const [current, setCurrent] = useState(0);
+  const [copied, setCopied] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const touchStart = useRef(null);
   const touchEnd = useRef(null);
@@ -83,6 +84,23 @@ export default function GallerySwipe({ conversations, onClose, onRegenerate }) {
           DOC {String(current + 1).padStart(3, "0")} / {String(total).padStart(3, "0")}
         </span>
         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          {onShareLink && (
+            <button
+              onClick={() => { onShareLink(); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
+              style={{
+                padding: "4px 12px",
+                backgroundColor: "transparent",
+                border: copied ? "1px solid #66ff99" : "1px solid #ff3333",
+                color: copied ? "#66ff99" : "#ff3333",
+                fontFamily: "'Courier New', monospace",
+                fontSize: "10px",
+                cursor: "pointer",
+                letterSpacing: "1px",
+              }}
+            >
+              {copied ? "COPIED!" : "SHARE"}
+            </button>
+          )}
           {onRegenerate && (
             <button
               className="gallery-regen"
